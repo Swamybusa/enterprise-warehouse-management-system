@@ -6,24 +6,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
+import com.infotact.enterprise_warehouse_management_system.model.Warehouse;
 import com.infotact.enterprise_warehouse_management_system.repo.StorageBinRepository;
+import com.infotact.enterprise_warehouse_management_system.repo.WarehouseRepository;
 
 @Service
 public class StorageBinService {
+	@Autowired
+	private StorageBinRepository storageBinRepository;
+	@Autowired
+	private WarehouseRepository warehouseRepository;
 
-    @Autowired
-    private StorageBinRepository repo;
+	public StorageBin save(Long warehouseId, StorageBin bin) {
+		Warehouse warehouse = warehouseRepository.findById(warehouseId)
+				.orElseThrow(() -> new RuntimeException("Warehouse not found"));
+		bin.setWarehouse(warehouse);
+		return storageBinRepository.save(bin);
+	}
 
-    public StorageBin save(StorageBin bin) {
-        return repo.save(bin);
-    }
+	public List<StorageBin> getAll() {
+		return storageBinRepository.findAll();
+	}
 
-    public List<StorageBin> getAll() {
-        return repo.findAll();
-    }
-
-    public StorageBin getById(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new RuntimeException("StorageBin not found"));
-    }
+	public StorageBin getById(Long id) {
+		return storageBinRepository.findById(id).orElseThrow(() -> new RuntimeException("Bin not found"));
+	}
 }

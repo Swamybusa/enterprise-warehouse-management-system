@@ -1,5 +1,6 @@
 package com.infotact.enterprise_warehouse_management_system.model;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -14,10 +15,10 @@ public class Product {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long productId;
-	private String productName;
+	@Column(name = "product_id")
+	private Long id;
+	private String name;
 	private String sku;
-	private double price;
-	private Integer quantity;
+	private String category;
 
 }

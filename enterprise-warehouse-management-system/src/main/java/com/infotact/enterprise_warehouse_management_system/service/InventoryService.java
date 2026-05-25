@@ -1,9 +1,12 @@
 package com.infotact.enterprise_warehouse_management_system.service;
 
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import com.infotact.enterprise_warehouse_management_system.dto.InventoryRequest;
 import com.infotact.enterprise_warehouse_management_system.model.InventoryItem;
 import com.infotact.enterprise_warehouse_management_system.model.Product;
 import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
@@ -13,28 +16,45 @@ import com.infotact.enterprise_warehouse_management_system.repo.StorageBinReposi
 
 @Service
 public class InventoryService {
-	@Autowired
-	private ProductRepository productRepository;
+    @Autowired private InventoryRepository inventoryRepo;
+    @Autowired private ProductRepository productRepo;
+    @Autowired private StorageBinRepository binRepo;
 
-	@Autowired
-	private StorageBinRepository storageBinRepository;
+    @Transactional
+    public InventoryItem receiveStock(Long productId, Long binId, int qty) {
+        Product product = productRepo.findById(productId)
+            .orElseThrow(() -> new RuntimeException("Product not found"));
+        StorageBin bin = binRepo.findById(binId)
+            .orElseThrow(() -> new RuntimeException("Bin not found"));
 
-	@Autowired
-	private InventoryRepository inventoryRepository;
+        Optional<InventoryItem> existingItem = inventoryRepo.findByProductAndStorageBin(product, bin);
 
-	public InventoryItem addInventory(InventoryRequest req) {
+        if (existingItem.isPresent()) {
+            InventoryItem item = existingItem.get();
+            item.setQuantity(item.getQuantity() + qty);
+            return inventoryRepo.save(item);
+        } else {
+            InventoryItem item = new InventoryItem();
+            item.setProduct(product);
+            item.setStorageBin(bin);
+            item.setQuantity(qty);
+            return inventoryRepo.save(item);
+        }
+    }
 
-		Product product = productRepository.findById(req.getProductId())
-				.orElseThrow(() -> new RuntimeException("Product not found"));
+    @Transactional
+    public void fulfillOrder(Long itemId, int qty) {
+        InventoryItem item = inventoryRepo.findById(itemId)
+            .orElseThrow(() -> new RuntimeException("Item not found"));
+        if (item.getQuantity() < qty) {
+            throw new RuntimeException("Insufficient stock");
+        }
+        item.setQuantity(item.getQuantity() - qty);
+        inventoryRepo.save(item);
+    }
 
-		StorageBin bin = storageBinRepository.findById(req.getStorageBinId())
-				.orElseThrow(() -> new RuntimeException("StorageBin not found"));
-
-		InventoryItem item = new InventoryItem();
-		item.setProduct(product);
-		item.setStorageBin(bin);
-		item.setQuantity(req.getQuantity());
-
-		return inventoryRepository.save(item);
-	}
+    public List<InventoryItem> getAll() {
+        return inventoryRepo.findAll();
+    }
 }
+

@@ -14,42 +14,15 @@ public class ProductService {
 	@Autowired
 	private ProductRepository productRepository;
 
-	public Product addProduct(Product product) {
-		return productRepository.save(product);
-
+	public Product save(Product p) {
+		return productRepository.save(p);
 	}
 
-	public List<Product> getAllProducts() {
+	public List<Product> getAll() {
 		return productRepository.findAll();
 	}
 
-	public Product getProductById(Long productId) {
-		return productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product Id is not found :"));
-
+	public Product getById(Long id) {
+		return productRepository.findById(id).orElseThrow(() -> new RuntimeException("Product not found"));
 	}
-
-	public Product updateProduct(Long productId, Product product) {
-
-		Product existingProduct = productRepository.findById(productId)
-				.orElseThrow(() -> new RuntimeException("Product not found with id "+productId));
-
-		existingProduct.setProductName(product.getProductName());
-		existingProduct.setSku(product.getSku());
-		existingProduct.setPrice(product.getPrice());
-		existingProduct.setQuantity(product.getQuantity());
-
-		return productRepository.save(existingProduct);
-	}
-
-	 public String deleteProduct(Long productId) {
-
-	        Product existingProduct = productRepository.findById(productId)
-	                .orElseThrow(() ->
-	                        new RuntimeException("Product not found with Id : " + productId));
-
-	        productRepository.delete(existingProduct);
-
-	        return "Product deleted successfully with Id : " + productId;
-	    }
 }

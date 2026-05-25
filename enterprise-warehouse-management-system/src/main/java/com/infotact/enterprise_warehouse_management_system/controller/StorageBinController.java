@@ -14,24 +14,23 @@ import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
 import com.infotact.enterprise_warehouse_management_system.service.StorageBinService;
 
 @RestController
-@RequestMapping("/storagebin")
+@RequestMapping("/api/storagebins")
 public class StorageBinController {
-
 	@Autowired
-	private StorageBinService storageBinService;
+	private StorageBinService storageBinservice;
 
-	@PostMapping("/add")
-	public StorageBin add(@RequestBody StorageBin bin) {
-		return storageBinService.save(bin);
+	@PostMapping("/add/{warehouseId}")
+	public StorageBin add(@PathVariable Long warehouseId, @RequestBody StorageBin bin) {
+		return storageBinservice.save(warehouseId, bin);
 	}
 
 	@GetMapping("/all")
 	public List<StorageBin> getAll() {
-		return storageBinService.getAll();
+		return storageBinservice.getAll();
 	}
 
 	@GetMapping("/{id}")
 	public StorageBin getById(@PathVariable Long id) {
-		return storageBinService.getById(id);
+		return storageBinservice.getById(id);
 	}
 }

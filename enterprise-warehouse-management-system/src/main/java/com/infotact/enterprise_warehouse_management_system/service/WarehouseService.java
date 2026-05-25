@@ -14,34 +14,16 @@ public class WarehouseService {
 	@Autowired
 	private WarehouseRepository warehouseRepository;
 
-	public Warehouse addWarehouse(Warehouse warehouse) {
-		return warehouseRepository.save(warehouse);
-
+	public Warehouse save(Warehouse w) {
+		return warehouseRepository.save(w);
 	}
 
-	public List<Warehouse> getAllWarehouses() {
+	public List<Warehouse> getAll() {
 		return warehouseRepository.findAll();
-
 	}
 
-	public Warehouse getWarehouseById(Long id) {
-		return warehouseRepository.findById(id).orElseThrow(() -> new RuntimeException("warehouse id is not found : "));
-	}
-
-	public Warehouse updateWarehouse(Long id, Warehouse warehouse) {
-		Warehouse exstd = warehouseRepository.findById(id)
-				.orElseThrow(() -> new RuntimeException("warehouse id is not found : "));
-		exstd.setWarehouseName(warehouse.getWarehouseName());
-		exstd.setLocation(warehouse.getLocation());
-
-		return warehouseRepository.save(exstd);
-
-	}
-
-	public String deleteWarehouse(Long id) {
-		warehouseRepository.deleteById(id);
-		return "warehouse deleted with id : " + id;
-
+	public Warehouse getById(Long id) {
+		return warehouseRepository.findById(id).orElseThrow(() -> new RuntimeException("Warehouse not found"));
 	}
 
 }
