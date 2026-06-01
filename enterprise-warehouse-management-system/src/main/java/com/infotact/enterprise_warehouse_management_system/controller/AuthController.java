@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infotact.enterprise_warehouse_management_system.dto.AuthRequest;
-import com.infotact.enterprise_warehouse_management_system.model.JwtUtil;
+import com.infotact.enterprise_warehouse_management_system.security.JwtUtil;
 
 @RestController
 @RequestMapping("/auth")

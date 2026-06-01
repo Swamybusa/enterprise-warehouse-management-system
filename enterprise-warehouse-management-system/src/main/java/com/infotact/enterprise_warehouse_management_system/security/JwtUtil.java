@@ -1,4 +1,4 @@
-package com.infotact.enterprise_warehouse_management_system.model;
+package com.infotact.enterprise_warehouse_management_system.security;
 
 import java.util.Date;
 
