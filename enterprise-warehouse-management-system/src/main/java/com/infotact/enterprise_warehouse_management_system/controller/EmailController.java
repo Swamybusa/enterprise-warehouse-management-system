@@ -11,6 +11,7 @@ import com.infotact.enterprise_warehouse_management_system.service.EmailService;
 @RequestMapping("/mail")
 public class EmailController {
 
+//	Email service
     @Autowired
     private EmailService emailService;
 
