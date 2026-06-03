@@ -12,25 +12,30 @@ import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtFilter extends OncePerRequestFilter {
+	@Override
+	protected void doFilterInternal(HttpServletRequest request,
+	        HttpServletResponse response,
+	        FilterChain filterChain)
+	        throws ServletException, IOException {
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+	    String uri = request.getRequestURI();
 
-        String authHeader = request.getHeader("Authorization");
+	    if (uri.startsWith("/auth")
+	            || uri.startsWith("/swagger-ui")
+	            || uri.startsWith("/v3/api-docs")) {
 
-        if (request.getRequestURI().startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
+	        filterChain.doFilter(request, response);
+	        return;
+	    }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
+	    String authHeader = request.getHeader("Authorization");
 
-        filterChain.doFilter(request, response);
-    }
+	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+	        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	        return;
+	    }
+
+	    filterChain.doFilter(request, response);
+	}
+
 }
