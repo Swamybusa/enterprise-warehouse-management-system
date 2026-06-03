@@ -22,12 +22,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
 	    if (uri.startsWith("/auth")
 	            || uri.startsWith("/swagger-ui")
-	            || uri.startsWith("/v3/api-docs")) {
+	            || uri.startsWith("/v3/api-docs")
+	            || uri.startsWith("/api")) {
 
 	        filterChain.doFilter(request, response);
 	        return;
 	    }
-
 	    String authHeader = request.getHeader("Authorization");
 
 	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
