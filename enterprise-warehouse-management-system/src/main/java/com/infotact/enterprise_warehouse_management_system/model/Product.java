@@ -20,5 +20,8 @@ public class Product {
 	private String name;
 	private String sku;
 	private String category;
+	
+	@Column(nullable = false)
+	private Integer stockQuantity = 0;
 
 }

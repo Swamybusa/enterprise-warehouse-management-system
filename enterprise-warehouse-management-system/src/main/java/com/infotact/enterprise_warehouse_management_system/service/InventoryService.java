@@ -44,6 +44,8 @@ public class InventoryService {
 			item.setStorageBin(bin);
 			item.setQuantity(qty);
 		}
+		product.setStockQuantity(product.getStockQuantity() + qty);
+		productRepository.save(product);
 		return inventoryRepository.save(item);
 	}
 
@@ -57,8 +59,12 @@ public class InventoryService {
 			throw new IllegalStateException(
 					"Insufficient stock. Requested: " + qty + ", Available: " + item.getQuantity());
 		}
-
 		item.setQuantity(item.getQuantity() - qty);
+
+		Product product = item.getProduct();
+		product.setStockQuantity(product.getStockQuantity() - qty);
+
+		productRepository.save(product);
 		inventoryRepository.save(item);
 	}
 
