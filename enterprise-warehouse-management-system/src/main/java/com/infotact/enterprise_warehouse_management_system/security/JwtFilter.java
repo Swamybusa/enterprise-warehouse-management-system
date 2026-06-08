@@ -13,29 +13,26 @@ import jakarta.servlet.http.HttpServletResponse;
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 	@Override
-	protected void doFilterInternal(HttpServletRequest request,
-	        HttpServletResponse response,
-	        FilterChain filterChain)
-	        throws ServletException, IOException {
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
 
-	    String uri = request.getRequestURI();
+		String uri = request.getRequestURI();
 
-	    if (uri.startsWith("/auth")
-	            || uri.startsWith("/swagger-ui")
-	            || uri.startsWith("/v3/api-docs")
-	            || uri.startsWith("/api")) {
+		if (uri.startsWith("/auth") || uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")
+				|| uri.startsWith("/orders") || uri.startsWith("/products") || uri.startsWith("/inventory")
+				|| uri.startsWith("/warehouses") || uri.startsWith("/storagebins")) {
 
-	        filterChain.doFilter(request, response);
-	        return;
-	    }
-	    String authHeader = request.getHeader("Authorization");
+			filterChain.doFilter(request, response);
+			return;
+		}
+		String authHeader = request.getHeader("Authorization");
 
-	    if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-	        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	        return;
-	    }
+		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+			return;
+		}
 
-	    filterChain.doFilter(request, response);
+		filterChain.doFilter(request, response);
 	}
 
 }

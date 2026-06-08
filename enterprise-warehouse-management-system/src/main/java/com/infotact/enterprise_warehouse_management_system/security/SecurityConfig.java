@@ -16,7 +16,7 @@ public class SecurityConfig {
 	                "/auth/**",
 	                "/swagger-ui/**",
 	                "/v3/api-docs/**",
-	                "/api/**" // allow all APIs temporarily
+	                "/orders/**" // allow all APIs temporarily
 	            ).permitAll()
 	            .anyRequest().authenticated()
 	        )
