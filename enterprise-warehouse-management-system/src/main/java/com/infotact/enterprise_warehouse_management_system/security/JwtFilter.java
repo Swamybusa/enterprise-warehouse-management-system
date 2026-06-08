@@ -19,20 +19,11 @@ public class JwtFilter extends OncePerRequestFilter {
 		String uri = request.getRequestURI();
 
 		if (uri.startsWith("/auth") || uri.startsWith("/swagger-ui") || uri.startsWith("/v3/api-docs")
-				|| uri.startsWith("/orders") || uri.startsWith("/products") || uri.startsWith("/inventory")
-				|| uri.startsWith("/warehouses") || uri.startsWith("/storagebins")) {
+				|| uri.startsWith("/api") || uri.startsWith("/orders") || uri.startsWith("/products")
+				|| uri.startsWith("/inventory") || uri.startsWith("/warehouses") || uri.startsWith("/storagebins")) {
 
 			filterChain.doFilter(request, response);
 			return;
 		}
-		String authHeader = request.getHeader("Authorization");
-
-		if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-			response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-			return;
-		}
-
-		filterChain.doFilter(request, response);
 	}
-
 }
