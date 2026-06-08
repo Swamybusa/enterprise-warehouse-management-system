@@ -30,4 +30,10 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Map.of("error", ex.getMessage()));
     }
+    @ExceptionHandler(InsufficientStockException.class)
+    public ResponseEntity<String> handleInsufficientStock(
+            InsufficientStockException ex) {
+
+        return ResponseEntity.badRequest().body(ex.getMessage());
+    }
 }

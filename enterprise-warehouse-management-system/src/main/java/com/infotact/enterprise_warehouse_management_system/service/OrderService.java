@@ -3,11 +3,12 @@ package com.infotact.enterprise_warehouse_management_system.service;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.infotact.enterprise_warehouse_management_system.enums.OrderStatus;
 import com.infotact.enterprise_warehouse_management_system.model.Order;
 import com.infotact.enterprise_warehouse_management_system.repo.OrderRepository;
-
+@Service
 public class OrderService {
 
 	@Autowired
