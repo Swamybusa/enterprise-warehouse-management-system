@@ -5,6 +5,8 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 
 import com.infotact.enterprise_warehouse_management_system.enums.OrderStatus;
 import com.infotact.enterprise_warehouse_management_system.exception.InsufficientStockException;
@@ -12,6 +14,7 @@ import com.infotact.enterprise_warehouse_management_system.model.Order;
 import com.infotact.enterprise_warehouse_management_system.model.Product;
 import com.infotact.enterprise_warehouse_management_system.repo.OrderRepository;
 import com.infotact.enterprise_warehouse_management_system.repo.ProductRepository;
+
 @Service
 public class OrderService {
 
@@ -20,7 +23,7 @@ public class OrderService {
 
 	@Autowired
 	private ProductRepository productRepository;
-	
+
 	public Order save(Order order) {
 		order.setStatus(OrderStatus.NEW);
 		return orderRepository.save(order);
@@ -29,25 +32,43 @@ public class OrderService {
 	public List<Order> getAll() {
 		return orderRepository.findAll();
 	}
+
 	@Transactional
 	public Order packOrder(Long orderId) {
 
-	    Order order = orderRepository.findById(orderId)
-	            .orElseThrow(() -> new RuntimeException("Order not found"));
+		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
 
-	    Product product = order.getProduct();
+		Product product = order.getProduct();
 
-	    if (product.getStockQuantity() < order.getQuantity()) {
-	        throw new InsufficientStockException("Insufficient stock available");
-	    }
+		if (product.getStockQuantity() < order.getQuantity()) {
+			throw new InsufficientStockException("Insufficient stock available");
+		}
 
-	    product.setStockQuantity(
-	            product.getStockQuantity() - order.getQuantity());
+		product.setStockQuantity(product.getStockQuantity() - order.getQuantity());
 
-	    order.setStatus(OrderStatus.PACKED);
+		order.setStatus(OrderStatus.PACKED);
 
-	    productRepository.save(product);
+		productRepository.save(product);
 
-	    return orderRepository.save(order);
+		return orderRepository.save(order);
 	}
+
+	public Order shipOrder(Long id) {
+
+		Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+
+		order.setStatus(OrderStatus.SHIPPED);
+
+		return orderRepository.save(order);
+	}
+
+	public Order deliverOrder(Long id) {
+
+		Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+
+		order.setStatus(OrderStatus.DELIVERED);
+
+		return orderRepository.save(order);
+	}
+
 }

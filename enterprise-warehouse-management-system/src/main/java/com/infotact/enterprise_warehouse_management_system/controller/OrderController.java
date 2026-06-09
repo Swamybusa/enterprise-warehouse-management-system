@@ -34,4 +34,13 @@ public class OrderController {
     public Order packOrder(@PathVariable Long id) {
         return orderService.packOrder(id);
     }
+    @PutMapping("/{id}/ship")
+	public Order shipOrder(@PathVariable Long id) {
+	    return orderService.shipOrder(id);
+	}
+
+	@PutMapping("/{id}/deliver")
+	public Order deliverOrder(@PathVariable Long id) {
+	    return orderService.deliverOrder(id);
+	}
 }
