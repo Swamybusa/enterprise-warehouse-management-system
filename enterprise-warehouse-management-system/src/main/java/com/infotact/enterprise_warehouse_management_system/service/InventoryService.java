@@ -27,26 +27,45 @@ public class InventoryService {
 	// ✅ Receive stock into a bin
 	@Transactional
 	public InventoryItem receiveStock(Long productId, Long binId, int qty) {
-		Product product = productRepository.findById(productId)
-				.orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
-		StorageBin bin = storageBinRepository.findById(binId)
-				.orElseThrow(() -> new IllegalArgumentException("Bin not found with id: " + binId));
 
-		Optional<InventoryItem> existingItem = inventoryRepository.findByProductAndStorageBin(product, bin);
+	    Product product = productRepository.findById(productId)
+	            .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
 
-		InventoryItem item;
-		if (existingItem.isPresent()) {
-			item = existingItem.get();
-			item.setQuantity(item.getQuantity() + qty);
-		} else {
-			item = new InventoryItem();
-			item.setProduct(product);
-			item.setStorageBin(bin);
-			item.setQuantity(qty);
-		}
-		product.setStockQuantity(product.getStockQuantity() + qty);
-		productRepository.save(product);
-		return inventoryRepository.save(item);
+	    StorageBin bin = storageBinRepository.findById(binId)
+	            .orElseThrow(() -> new IllegalArgumentException("Bin not found with id: " + binId));
+
+	    Optional<InventoryItem> existingItem =
+	            inventoryRepository.findByProductAndStorageBin(product, bin);
+
+	    int currentQty = existingItem.map(InventoryItem::getQuantity).orElse(0);
+
+	    if (currentQty + qty > bin.getCapacity()) {
+	        throw new RuntimeException(
+	                "Storage bin capacity exceeded. Capacity: "
+	                + bin.getCapacity()
+	                + ", Current: "
+	                + currentQty
+	                + ", Incoming: "
+	                + qty);
+	    }
+
+	    InventoryItem item;
+
+	    if (existingItem.isPresent()) {
+	        item = existingItem.get();
+	        item.setQuantity(currentQty + qty);
+	    } else {
+	        item = new InventoryItem();
+	        item.setProduct(product);
+	        item.setStorageBin(bin);
+	        item.setQuantity(qty);
+	    }
+
+	    product.setStockQuantity(product.getStockQuantity() + qty);
+
+	    productRepository.save(product);
+
+	    return inventoryRepository.save(item);
 	}
 
 	// ✅ Fulfill order by itemId
