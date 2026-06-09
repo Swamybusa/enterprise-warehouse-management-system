@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.infotact.enterprise_warehouse_management_system.dto.AuthRequest;
+import com.infotact.enterprise_warehouse_management_system.model.User;
+import com.infotact.enterprise_warehouse_management_system.repo.UserRepository;
 import com.infotact.enterprise_warehouse_management_system.security.JwtUtil;
 
 @RestController
@@ -16,16 +18,17 @@ public class AuthController {
 	@Autowired
 	private JwtUtil jwtUtil;
 
+	@Autowired
+	private UserRepository userRepository;
+
 	@PostMapping("/login")
 	public String login(@RequestBody AuthRequest request) {
 
-		System.out.println("Username = " + request.getUsername());
-		System.out.println("Password = " + request.getPassword());
+		User user = userRepository.findByUsername(request.getUsername()).orElse(null);
 
-		// TEMP login (we will connect DB later)
-		if ("admin".equals(request.getUsername()) && "admin".equals(request.getPassword())) {
+		if (user != null && user.getPassword().equals(request.getPassword())) {
 
-			return jwtUtil.generateToken(request.getUsername());
+			return jwtUtil.generateToken(user.getUsername());
 		}
 
 		return "Invalid credentials";
