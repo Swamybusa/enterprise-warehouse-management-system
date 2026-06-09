@@ -22,13 +22,23 @@ public class SecurityConfig {
 
         http
             .csrf(csrf -> csrf.disable())
+
             .sessionManagement(session ->
                     session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
+
             .authorizeHttpRequests(auth -> auth
-                    .requestMatchers("/auth/**", "/swagger-ui/**", "/v3/api-docs/**").permitAll()
+
+                    .requestMatchers("/auth/**").permitAll()
+                    .requestMatchers("/v3/api-docs/**", "/swagger-ui/**").permitAll()
+
+                    .requestMatchers("/api/products/**").hasRole("ADMIN")
+                    .requestMatchers("/api/inventory/**").hasRole("ADMIN")
+                    .requestMatchers("/api/orders/**").hasAnyRole("ADMIN", "OPERATOR")
+
                     .anyRequest().authenticated()
             )
+
             .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

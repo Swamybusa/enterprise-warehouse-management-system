@@ -5,70 +5,73 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 
 import com.infotact.enterprise_warehouse_management_system.enums.OrderStatus;
 import com.infotact.enterprise_warehouse_management_system.exception.InsufficientStockException;
+import com.infotact.enterprise_warehouse_management_system.model.InventoryItem;
 import com.infotact.enterprise_warehouse_management_system.model.Order;
-import com.infotact.enterprise_warehouse_management_system.model.Product;
+import com.infotact.enterprise_warehouse_management_system.repo.InventoryRepository;
 import com.infotact.enterprise_warehouse_management_system.repo.OrderRepository;
-import com.infotact.enterprise_warehouse_management_system.repo.ProductRepository;
-
 @Service
 public class OrderService {
 
-	@Autowired
-	private OrderRepository orderRepository;
+    @Autowired
+    private OrderRepository orderRepository;
 
-	@Autowired
-	private ProductRepository productRepository;
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
-	public Order save(Order order) {
-		order.setStatus(OrderStatus.NEW);
-		return orderRepository.save(order);
-	}
+    public Order save(Order order) {
+        order.setStatus(OrderStatus.NEW);
+        return orderRepository.save(order);
+    }
 
-	public List<Order> getAll() {
-		return orderRepository.findAll();
-	}
+    public List<Order> getAll() {
+        return orderRepository.findAll();
+    }
 
-	@Transactional
-	public Order packOrder(Long orderId) {
+    @Transactional
+    public Order packOrder(Long orderId) {
 
-		Order order = orderRepository.findById(orderId).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-		Product product = order.getProduct();
+        // 👉 GET INVENTORY (stock source)
+        InventoryItem item = inventoryRepository
+                .findByProduct(order.getProduct())
+                .orElseThrow(() -> new InsufficientStockException("Stock not found"));
 
-		if (product.getStockQuantity() < order.getQuantity()) {
-			throw new InsufficientStockException("Insufficient stock available");
-		}
+        if (item.getQuantity() < order.getQuantity()) {
+            throw new InsufficientStockException("Insufficient stock available");
+        }
 
-		product.setStockQuantity(product.getStockQuantity() - order.getQuantity());
+        // 👉 REDUCE STOCK FROM INVENTORY
+        item.setQuantity(item.getQuantity() - order.getQuantity());
 
-		order.setStatus(OrderStatus.PACKED);
+        inventoryRepository.save(item);
 
-		productRepository.save(product);
+        order.setStatus(OrderStatus.PACKED);
 
-		return orderRepository.save(order);
-	}
+        return orderRepository.save(order);
+    }
 
-	public Order shipOrder(Long id) {
+    public Order shipOrder(Long id) {
 
-		Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-		order.setStatus(OrderStatus.SHIPPED);
+        order.setStatus(OrderStatus.SHIPPED);
 
-		return orderRepository.save(order);
-	}
+        return orderRepository.save(order);
+    }
 
-	public Order deliverOrder(Long id) {
+    public Order deliverOrder(Long id) {
 
-		Order order = orderRepository.findById(id).orElseThrow(() -> new RuntimeException("Order not found"));
+        Order order = orderRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
 
-		order.setStatus(OrderStatus.DELIVERED);
+        order.setStatus(OrderStatus.DELIVERED);
 
-		return orderRepository.save(order);
-	}
-
+        return orderRepository.save(order);
+    }
 }

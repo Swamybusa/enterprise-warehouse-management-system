@@ -11,5 +11,5 @@ import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<InventoryItem, Long> {
-	 Optional<InventoryItem> findByProductAndStorageBin(Product product, StorageBin bin);
+	 Optional<InventoryItem> findByProduct(Product product);
 }

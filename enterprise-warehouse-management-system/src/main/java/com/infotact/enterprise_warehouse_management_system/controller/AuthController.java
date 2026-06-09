@@ -15,22 +15,26 @@ import com.infotact.enterprise_warehouse_management_system.security.JwtUtil;
 @RequestMapping("/auth")
 public class AuthController {
 
-	@Autowired
-	private JwtUtil jwtUtil;
+    @Autowired
+    private JwtUtil jwtUtil;
 
-	@Autowired
-	private UserRepository userRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@PostMapping("/login")
-	public String login(@RequestBody AuthRequest request) {
+    @PostMapping("/login")
+    public String login(@RequestBody AuthRequest request) {
 
-		User user = userRepository.findByUsername(request.getUsername()).orElse(null);
+        User user = userRepository.findByUsername(request.getUsername())
+                .orElse(null);
 
-		if (user != null && user.getPassword().equals(request.getPassword())) {
+        if (user != null && user.getPassword().equals(request.getPassword())) {
 
-			return jwtUtil.generateToken(user.getUsername());
-		}
+            return jwtUtil.generateToken(
+                    user.getUsername(),
+                    user.getRole().name()
+            );
+        }
 
-		return "Invalid credentials";
-	}
+        return "Invalid credentials";
+    }
 }

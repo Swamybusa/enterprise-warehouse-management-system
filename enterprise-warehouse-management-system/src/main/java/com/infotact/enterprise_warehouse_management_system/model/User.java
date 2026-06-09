@@ -1,5 +1,7 @@
 package com.infotact.enterprise_warehouse_management_system.model;
 
+import com.infotact.enterprise_warehouse_management_system.enums.Role;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -26,6 +28,6 @@ public class User {
 
     private String password;
 
-
-    private String role;
+    @Enumerated(EnumType.STRING)
+    private Role role;
 }

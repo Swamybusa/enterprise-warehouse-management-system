@@ -1,11 +1,6 @@
 package com.infotact.enterprise_warehouse_management_system.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -13,15 +8,12 @@ import lombok.Data;
 @Data
 public class Product {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "product_id")
-	private Long id;
-	private String name;
-	private String sku;
-	private String category;
-	
-	@Column(nullable = false)
-	private Integer stockQuantity = 0;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "product_id")
+    private Long id;
 
+    private String name;
+    private String sku;
+    private String category;
 }

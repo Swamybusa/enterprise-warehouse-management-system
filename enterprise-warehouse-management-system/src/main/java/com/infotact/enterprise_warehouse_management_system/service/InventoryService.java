@@ -17,78 +17,61 @@ import com.infotact.enterprise_warehouse_management_system.repo.StorageBinReposi
 @Service
 public class InventoryService {
 
-	@Autowired
-	private InventoryRepository inventoryRepository;
-	@Autowired
-	private ProductRepository productRepository;
-	@Autowired
-	private StorageBinRepository storageBinRepository;
+    @Autowired
+    private InventoryRepository inventoryRepository;
 
-	// ✅ Receive stock into a bin
-	@Transactional
-	public InventoryItem receiveStock(Long productId, Long binId, int qty) {
+    @Autowired
+    private ProductRepository productRepository;
 
-	    Product product = productRepository.findById(productId)
-	            .orElseThrow(() -> new IllegalArgumentException("Product not found with id: " + productId));
+    @Autowired
+    private StorageBinRepository storageBinRepository;
 
-	    StorageBin bin = storageBinRepository.findById(binId)
-	            .orElseThrow(() -> new IllegalArgumentException("Bin not found with id: " + binId));
+    // RECEIVE STOCK
+    @Transactional
+    public InventoryItem receiveStock(Long productId, Long binId, int qty) {
 
-	    Optional<InventoryItem> existingItem =
-	            inventoryRepository.findByProductAndStorageBin(product, bin);
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-	    int currentQty = existingItem.map(InventoryItem::getQuantity).orElse(0);
+        StorageBin bin = storageBinRepository.findById(binId)
+                .orElseThrow(() -> new IllegalArgumentException("Bin not found"));
 
-	    if (currentQty + qty > bin.getCapacity()) {
-	        throw new RuntimeException(
-	                "Storage bin capacity exceeded. Capacity: "
-	                + bin.getCapacity()
-	                + ", Current: "
-	                + currentQty
-	                + ", Incoming: "
-	                + qty);
-	    }
+        Optional<InventoryItem> existingItem =
+                inventoryRepository.findByProduct(product);
 
-	    InventoryItem item;
+        InventoryItem item;
 
-	    if (existingItem.isPresent()) {
-	        item = existingItem.get();
-	        item.setQuantity(currentQty + qty);
-	    } else {
-	        item = new InventoryItem();
-	        item.setProduct(product);
-	        item.setStorageBin(bin);
-	        item.setQuantity(qty);
-	    }
+        if (existingItem.isPresent()) {
+            item = existingItem.get();
+            item.setQuantity(item.getQuantity() + qty);
+        } else {
+            item = new InventoryItem();
+            item.setProduct(product);
+            item.setStorageBin(bin);
+            item.setQuantity(qty);
+        }
 
-	    product.setStockQuantity(product.getStockQuantity() + qty);
+        return inventoryRepository.save(item);
+    }
 
-	    productRepository.save(product);
+    // FULFILL ORDER
+    @Transactional
+    public void fulfillOrder(Long itemId, int qty) {
 
-	    return inventoryRepository.save(item);
-	}
+        InventoryItem item = inventoryRepository.findById(itemId)
+                .orElseThrow(() -> new IllegalArgumentException("Inventory item not found"));
 
-	// ✅ Fulfill order by itemId
-	@Transactional
-	public void fulfillOrder(Long itemId, int qty) {
-		InventoryItem item = inventoryRepository.findById(itemId)
-				.orElseThrow(() -> new IllegalArgumentException("Inventory item not found with id: " + itemId));
+        if (item.getQuantity() < qty) {
+            throw new IllegalStateException("Insufficient stock");
+        }
 
-		if (item.getQuantity() < qty) {
-			throw new IllegalStateException(
-					"Insufficient stock. Requested: " + qty + ", Available: " + item.getQuantity());
-		}
-		item.setQuantity(item.getQuantity() - qty);
+        item.setQuantity(item.getQuantity() - qty);
 
-		Product product = item.getProduct();
-		product.setStockQuantity(product.getStockQuantity() - qty);
+        inventoryRepository.save(item);
+    }
 
-		productRepository.save(product);
-		inventoryRepository.save(item);
-	}
-
-	// ✅ Get all inventory items
-	public List<InventoryItem> getAll() {
-		return inventoryRepository.findAll();
-	}
+    // GET ALL
+    public List<InventoryItem> getAll() {
+        return inventoryRepository.findAll();
+    }
 }

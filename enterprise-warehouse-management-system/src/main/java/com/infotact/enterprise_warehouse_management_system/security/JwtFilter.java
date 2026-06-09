@@ -1,10 +1,11 @@
 package com.infotact.enterprise_warehouse_management_system.security;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -13,7 +14,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
 @Component
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -32,7 +32,6 @@ public class JwtFilter extends OncePerRequestFilter {
         if (uri.startsWith("/auth")
                 || uri.startsWith("/swagger-ui")
                 || uri.startsWith("/v3/api-docs")) {
-
             filterChain.doFilter(request, response);
             return;
         }
@@ -46,20 +45,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String token = header.substring(7);
 
-        // validate token
         if (!jwtUtil.validateToken(token)) {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
 
-        // 🔥 IMPORTANT: set authentication in Spring context
         String username = jwtUtil.extractUsername(token);
+        String role = jwtUtil.extractRole(token);
 
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                         username,
                         null,
-                        new ArrayList<>()
+                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
                 );
 
         SecurityContextHolder.getContext().setAuthentication(auth);
