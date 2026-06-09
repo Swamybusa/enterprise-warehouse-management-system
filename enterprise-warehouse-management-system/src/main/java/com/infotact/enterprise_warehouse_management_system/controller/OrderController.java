@@ -15,7 +15,7 @@ import com.infotact.enterprise_warehouse_management_system.model.Order;
 import com.infotact.enterprise_warehouse_management_system.service.OrderService;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 public class OrderController {
 
     @Autowired

@@ -11,32 +11,14 @@ public class SecurityConfig {
 
     @Autowired
     private JwtFilter jwtFilter;
-
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
 
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-            	    .requestMatchers(
-            	        "/auth/**",
-            	        "/swagger-ui/**",
-            	        "/v3/api-docs/**",
-            	        "/orders/**",
-            	        "/api/products/**",
-            	        "/warehouses/**",
-            	        "/storagebins/**",
-            	        "/inventory/**"
-            	    ).permitAll()
-            	    .anyRequest().authenticated()
-            	)
-            .addFilterBefore(jwtFilter,
-                    org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class)
-            .sessionManagement(session -> session.sessionCreationPolicy(
-                    org.springframework.security.config.http.SessionCreationPolicy.STATELESS
-            ))
-            .formLogin(form -> form.disable())
-            .httpBasic(httpBasic -> httpBasic.disable());
+                .anyRequest().permitAll()
+            );
 
         return http.build();
     }
