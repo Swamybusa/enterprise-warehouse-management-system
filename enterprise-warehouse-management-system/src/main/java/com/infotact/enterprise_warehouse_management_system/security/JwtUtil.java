@@ -19,11 +19,11 @@ public class JwtUtil {
     private final SecretKey key =
             Keys.hmacShaKeyFor(SECRET.getBytes());
 
-    // generate token with ROLE
+    // generate token WITH ROLE
     public String generateToken(String username, String role) {
         return Jwts.builder()
                 .subject(username)
-                .claim("role", role)
+                .claim("role", role)   // ✅ IMPORTANT
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + 86400000))
                 .signWith(key)
@@ -32,25 +32,27 @@ public class JwtUtil {
 
     // extract username
     public String extractUsername(String token) {
-        return Jwts.parser()
+        Claims claims = Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .getSubject();
+                .getPayload();
+
+        return claims.getSubject();
     }
 
     // extract role
     public String extractRole(String token) {
-        return Jwts.parser()
+        Claims claims = Jwts.parser()
                 .verifyWith(key)
                 .build()
                 .parseSignedClaims(token)
-                .getPayload()
-                .get("role", String.class);
+                .getPayload();
+
+        return claims.get("role", String.class);
     }
 
-    // validate
+    // validate token
     public boolean validateToken(String token) {
         try {
             Jwts.parser()

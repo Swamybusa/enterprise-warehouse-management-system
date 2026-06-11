@@ -31,4 +31,7 @@ public class StorageBinService {
 	public StorageBin getById(Long id) {
 		return storageBinRepository.findById(id).orElseThrow(() -> new RuntimeException("Bin not found"));
 	}
+	public void delete(Long id) {
+	    storageBinRepository.deleteById(id);
+	}
 }

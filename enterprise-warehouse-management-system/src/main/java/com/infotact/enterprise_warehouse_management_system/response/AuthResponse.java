@@ -1,0 +1,19 @@
+package com.infotact.enterprise_warehouse_management_system.response;
+
+public class AuthResponse {
+	private String token;
+	private String role;
+
+	public AuthResponse(String token, String role) {
+		this.token = token;
+		this.role = role;
+	}
+
+	public String getToken() {
+		return token;
+	}
+
+	public String getRole() {
+		return role;
+	}
+}

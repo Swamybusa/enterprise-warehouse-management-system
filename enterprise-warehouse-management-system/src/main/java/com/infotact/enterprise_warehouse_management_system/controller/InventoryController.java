@@ -9,6 +9,7 @@ import com.infotact.enterprise_warehouse_management_system.service.InventoryServ
 
 @RestController
 @RequestMapping("/api/inventory")
+@CrossOrigin(origins = "*")
 public class InventoryController {
 
     private final InventoryService service;
@@ -17,24 +18,24 @@ public class InventoryController {
         this.service = service;
     }
 
-    // ✅ Receive stock
-    @PostMapping("/receive/{productId}/{binId}/{qty}")
-    public InventoryItem receive(@PathVariable Long productId,
-                                 @PathVariable Long binId,
-                                 @PathVariable int qty) {
+    // Receive stock
+    @PostMapping("/receive")
+    public InventoryItem receive(@RequestParam Long productId,
+                                 @RequestParam Long binId,
+                                 @RequestParam int qty) {
         return service.receiveStock(productId, binId, qty);
     }
 
-    // ✅ Fulfill order
-    @PostMapping("/fulfill/{itemId}/{qty}")
-    public ResponseEntity<String> fulfill(@PathVariable Long itemId,
-                                          @PathVariable int qty) {
-        service.fulfillOrder(itemId, qty);
-        return ResponseEntity.ok("Order fulfilled successfully");
+    // Fulfill order
+    @PostMapping("/fulfill")
+    public ResponseEntity<String> fulfill(@RequestParam Long productId,
+                                          @RequestParam int qty) {
+        service.fulfillOrder(productId, qty);
+        return ResponseEntity.ok("Stock reduced successfully");
     }
 
-    // ✅ Get all inventory items
-    @GetMapping("/all")
+    // Get all inventory
+    @GetMapping
     public List<InventoryItem> getAll() {
         return service.getAll();
     }

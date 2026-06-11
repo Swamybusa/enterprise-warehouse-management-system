@@ -10,8 +10,10 @@ import com.infotact.enterprise_warehouse_management_system.enums.OrderStatus;
 import com.infotact.enterprise_warehouse_management_system.exception.InsufficientStockException;
 import com.infotact.enterprise_warehouse_management_system.model.InventoryItem;
 import com.infotact.enterprise_warehouse_management_system.model.Order;
+import com.infotact.enterprise_warehouse_management_system.model.Product;
 import com.infotact.enterprise_warehouse_management_system.repo.InventoryRepository;
 import com.infotact.enterprise_warehouse_management_system.repo.OrderRepository;
+
 @Service
 public class OrderService {
 
@@ -21,7 +23,21 @@ public class OrderService {
     @Autowired
     private InventoryRepository inventoryRepository;
 
+    // CREATE ORDER
     public Order save(Order order) {
+
+        Product product = order.getProduct();
+
+        List<InventoryItem> items = inventoryRepository.findByProduct(product);
+
+        int totalStock = items.stream()
+                .mapToInt(InventoryItem::getQuantity)
+                .sum();
+
+        if (totalStock < order.getQuantity()) {
+            throw new InsufficientStockException("Not enough stock available");
+        }
+
         order.setStatus(OrderStatus.NEW);
         return orderRepository.save(order);
     }
@@ -30,28 +46,40 @@ public class OrderService {
         return orderRepository.findAll();
     }
 
+    // PACK ORDER
     @Transactional
     public Order packOrder(Long orderId) {
 
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        // 👉 GET INVENTORY (stock source)
-        InventoryItem item = inventoryRepository
-                .findByProduct(order.getProduct())
-                .orElseThrow(() -> new InsufficientStockException("Stock not found"));
-
-        if (item.getQuantity() < order.getQuantity()) {
-            throw new InsufficientStockException("Insufficient stock available");
+        if (order.getStatus() != OrderStatus.NEW) {
+            throw new RuntimeException("Only NEW orders can be packed");
         }
 
-        // 👉 REDUCE STOCK FROM INVENTORY
-        item.setQuantity(item.getQuantity() - order.getQuantity());
+        List<InventoryItem> items =
+                inventoryRepository.findByProduct(order.getProduct());
 
-        inventoryRepository.save(item);
+        int remaining = order.getQuantity();
+
+        for (InventoryItem item : items) {
+
+            if (remaining == 0) break;
+
+            int available = item.getQuantity();
+
+            if (available >= remaining) {
+                item.setQuantity(available - remaining);
+                remaining = 0;
+            } else {
+                item.setQuantity(0);
+                remaining -= available;
+            }
+        }
+
+        inventoryRepository.saveAll(items);
 
         order.setStatus(OrderStatus.PACKED);
-
         return orderRepository.save(order);
     }
 
@@ -60,8 +88,11 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setStatus(OrderStatus.SHIPPED);
+        if (order.getStatus() != OrderStatus.PACKED) {
+            throw new RuntimeException("Only PACKED orders can be shipped");
+        }
 
+        order.setStatus(OrderStatus.SHIPPED);
         return orderRepository.save(order);
     }
 
@@ -70,8 +101,11 @@ public class OrderService {
         Order order = orderRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
 
-        order.setStatus(OrderStatus.DELIVERED);
+        if (order.getStatus() != OrderStatus.SHIPPED) {
+            throw new RuntimeException("Only SHIPPED orders can be delivered");
+        }
 
+        order.setStatus(OrderStatus.DELIVERED);
         return orderRepository.save(order);
     }
 }

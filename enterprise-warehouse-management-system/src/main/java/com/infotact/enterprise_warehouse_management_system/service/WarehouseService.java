@@ -11,19 +11,23 @@ import com.infotact.enterprise_warehouse_management_system.repo.WarehouseReposit
 @Service
 public class WarehouseService {
 
-	@Autowired
-	private WarehouseRepository warehouseRepository;
+    @Autowired
+    private WarehouseRepository warehouseRepository;
 
-	public Warehouse save(Warehouse w) {
-		return warehouseRepository.save(w);
-	}
+    public Warehouse save(Warehouse w) {
+        return warehouseRepository.save(w);
+    }
 
-	public List<Warehouse> getAll() {
-		return warehouseRepository.findAll();
-	}
+    public List<Warehouse> getAll() {
+        return warehouseRepository.findAll();
+    }
 
-	public Warehouse getById(Long id) {
-		return warehouseRepository.findById(id).orElseThrow(() -> new RuntimeException("Warehouse not found"));
-	}
+    public Warehouse getById(Long id) {
+        return warehouseRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Warehouse not found"));
+    }
 
+    public void delete(Long id) {
+        warehouseRepository.deleteById(id);
+    }
 }

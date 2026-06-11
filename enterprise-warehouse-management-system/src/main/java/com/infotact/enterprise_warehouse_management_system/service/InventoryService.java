@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.infotact.enterprise_warehouse_management_system.exception.InsufficientStockException;
 import com.infotact.enterprise_warehouse_management_system.model.InventoryItem;
 import com.infotact.enterprise_warehouse_management_system.model.Product;
 import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
@@ -26,7 +27,9 @@ public class InventoryService {
     @Autowired
     private StorageBinRepository storageBinRepository;
 
-    // RECEIVE STOCK
+    // =========================
+    // RECEIVE STOCK (ADD/UPDATE)
+    // =========================
     @Transactional
     public InventoryItem receiveStock(Long productId, Long binId, int qty) {
 
@@ -34,10 +37,10 @@ public class InventoryService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
         StorageBin bin = storageBinRepository.findById(binId)
-                .orElseThrow(() -> new IllegalArgumentException("Bin not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Storage Bin not found"));
 
         Optional<InventoryItem> existingItem =
-                inventoryRepository.findByProduct(product);
+                inventoryRepository.findByProductAndStorageBin(product, bin);
 
         InventoryItem item;
 
@@ -54,23 +57,49 @@ public class InventoryService {
         return inventoryRepository.save(item);
     }
 
-    // FULFILL ORDER
+    // =========================
+    // FULFILL ORDER (DEDUCT STOCK)
+    // =========================
     @Transactional
-    public void fulfillOrder(Long itemId, int qty) {
+    public void fulfillOrder(Long productId, int qty) {
 
-        InventoryItem item = inventoryRepository.findById(itemId)
-                .orElseThrow(() -> new IllegalArgumentException("Inventory item not found"));
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
 
-        if (item.getQuantity() < qty) {
-            throw new IllegalStateException("Insufficient stock");
+        List<InventoryItem> items =
+                inventoryRepository.findByProduct(product);
+
+        int totalStock = items.stream()
+                .mapToInt(InventoryItem::getQuantity)
+                .sum();
+
+        if (totalStock < qty) {
+            throw new InsufficientStockException("Insufficient stock available");
         }
 
-        item.setQuantity(item.getQuantity() - qty);
+        int remaining = qty;
 
-        inventoryRepository.save(item);
+        for (InventoryItem item : items) {
+
+            if (remaining == 0) break;
+
+            int available = item.getQuantity();
+
+            if (available >= remaining) {
+                item.setQuantity(available - remaining);
+                remaining = 0;
+            } else {
+                item.setQuantity(0);
+                remaining -= available;
+            }
+        }
+
+        inventoryRepository.saveAll(items);
     }
 
-    // GET ALL
+    // =========================
+    // GET ALL INVENTORY
+    // =========================
     public List<InventoryItem> getAll() {
         return inventoryRepository.findAll();
     }

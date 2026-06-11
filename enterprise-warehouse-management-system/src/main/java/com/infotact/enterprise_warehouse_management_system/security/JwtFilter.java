@@ -28,14 +28,14 @@ public class JwtFilter extends OncePerRequestFilter {
 
         String uri = request.getRequestURI();
 
-        // public endpoints
         if (uri.startsWith("/auth")
                 || uri.startsWith("/swagger-ui")
-                || uri.startsWith("/v3/api-docs")) {
+                || uri.startsWith("/v3/api-docs")
+                || uri.startsWith("/api/dashboard")) {
+
             filterChain.doFilter(request, response);
             return;
         }
-
         String header = request.getHeader("Authorization");
 
         if (header == null || !header.startsWith("Bearer ")) {
@@ -51,15 +51,17 @@ public class JwtFilter extends OncePerRequestFilter {
         }
 
         String username = jwtUtil.extractUsername(token);
-        String role = jwtUtil.extractRole(token);
+        String role = jwtUtil.extractRole(token); // ADMIN / OPERATOR
 
+        System.out.println("Role from token = " + role);
         UsernamePasswordAuthenticationToken auth =
                 new UsernamePasswordAuthenticationToken(
                         username,
                         null,
-                        List.of(new SimpleGrantedAuthority("ROLE_" + role))
+                        List.of(new SimpleGrantedAuthority("ROLE_"+role)) // ✅ IMPORTANT FIX
                 );
 
+        System.out.println("Authorities = " + auth.getAuthorities());
         SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);

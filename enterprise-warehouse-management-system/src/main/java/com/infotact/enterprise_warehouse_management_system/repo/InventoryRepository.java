@@ -1,5 +1,6 @@
 package com.infotact.enterprise_warehouse_management_system.repo;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +12,6 @@ import com.infotact.enterprise_warehouse_management_system.model.StorageBin;
 
 @Repository
 public interface InventoryRepository extends JpaRepository<InventoryItem, Long> {
-	 Optional<InventoryItem> findByProduct(Product product);
+    List<InventoryItem> findByProduct(Product product);
+	 Optional<InventoryItem> findByProductAndStorageBin(Product product,StorageBin storageBin);
 }
